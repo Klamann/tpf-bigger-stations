@@ -1,0 +1,62 @@
+local constructionutil = require "constructionutil"
+local paramsutil = require "paramsutil"
+local railstationconfigutil = require "railstationconfigutil"
+
+local vec3 = require "vec3"
+local transf = require "transf"
+
+function data()
+
+	local stationConfig =  {
+		type = "passenger",
+		name = "1850",
+
+		stationType = "through",
+
+		segmentLength = 20,
+		platformDistance = 9,
+		streetType = "station_old_small",
+		stairs = "station/train/passenger/1850/platform_stairs.mdl",
+		stairsPlatform = "station/train/passenger/1850/platform_single_stairs_second.mdl",
+
+		tracksConfig = {
+			{ num = 1, buildingSizeIndex = 1, buildingWidth = 18.0 },
+			{ num = 2, buildingSizeIndex = 2, buildingWidth = 18.0 },
+			{ num = 3, buildingSizeIndex = 3, buildingWidth = 34.0 },
+			{ num = 4, buildingSizeIndex = 3, buildingWidth = 34.0 },
+			{ num = 6, buildingSizeIndex = 4, buildingWidth = 43.0 },
+			{ num = 8, buildingSizeIndex = 5, buildingWidth = 60.0 },
+			{ num = 10, buildingSizeIndex = 5, buildingWidth = 60.0 },
+			{ num = 12, buildingSizeIndex = 5, buildingWidth = 60.0 },
+		},
+
+		trackTypes = { "standard.lua", "high_speed.lua" }
+	}
+
+	local stationBuilding = railstationconfigutil.makeStationBuilding(stationConfig)
+
+	local platformConfig = railstationconfigutil.makePlatformConfig(stationConfig)
+
+return {
+	type = "RAIL_STATION",
+	description = {
+		name = _("Train station"),
+		description = _("Train station for passengers.")
+	},
+	availability = {
+		yearTo = 1950,
+		yearFrom = 1850
+	},
+	order = 1000,
+	soundConfig = {
+		soundSet = { name = "station_passenger_old" }
+	},
+
+	params = paramsutil.makeTrainStationParams(stationConfig, platformConfig),
+
+	updateFn = function(params)
+		return constructionutil.makeTrainStationNew(railstationconfigutil.makeTrainStationConfig(params, stationConfig, stationBuilding, platformConfig))
+	end
+}
+
+end
