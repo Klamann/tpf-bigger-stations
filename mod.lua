@@ -6,6 +6,9 @@ return {
 		severityRemove = "NONE",
 		name = _("More Tracks for Stations"),
 		description = _("desc"),
-	}
+	},
+	runFn = function (settings)
+		local stationmod = require "stationmod"
+	end
 }
 end
