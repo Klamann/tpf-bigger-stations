@@ -4,8 +4,18 @@ return {
 		minorVersion = 0,
 		severityAdd = "NONE",
 		severityRemove = "NONE",
-		name = _("More Tracks for Stations"),
+		name = _("name"),
 		description = _("desc"),
+    authors = {
+      {
+        name = "Klamann",
+        role = "CREATOR",
+        text = "",
+        steamProfile = "klamann",
+        tfnetId = 21474,
+      },
+    },
+    tags = { "Train Station" },
 	},
 	runFn = function (settings)
 		local stationmod = require "stationmod"

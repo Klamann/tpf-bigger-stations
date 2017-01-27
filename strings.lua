@@ -1,11 +1,12 @@
 function data()
 return {
 	en = {
-		desc = "Increases the number of available Tracks for all vanilla train stations."
+		name = "Bigger Train Stations",
+		desc = "Increases the number of available tracks and the length of train stations."
 	},
 	de = {
-		["More Tracks for Stations"] = "Mehr Gleise für Bahnhöfe",
-		desc = "Erhöht die Anzahl der verfügbaren Gleise für alle Vanilla-Bahnhöfe."
+		name = "Größere Bahnhöfe",
+		desc = "Erhöht die Anzahl der verfügbaren Gleise und die Länge der Bahnhöfe."
 	}
 }
 end
