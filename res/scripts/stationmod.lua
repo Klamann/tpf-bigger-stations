@@ -4,99 +4,91 @@ station mod by Klamann
 
 ]]--
 
-local constructionutil = require "constructionutil"
+--local constructionutil = require "constructionutil"
 local paramsutil = require "paramsutil"
 local railstationconfigutil = require "stationmod_railstationconfigutil"
---local stationmod_deps = require "stationmod_deps"
 local stationmod = {}
 
 
 -- store copies of functions that will be overriden in the `super` table
 local super = {}
-super.makeTrainStationNew = constructionutil.makeTrainStationNew
-super.makePlatformConfig = railstationconfigutil.makePlatformConfig
+super.makeTrainStationConfig = railstationconfigutil.makeTrainStationConfig
 
 
---[[
-local function makeNumTracksValues(stationConfig)
-  local result = { }
-
-  if stationConfig ~= nil then
-    for i = 1, #stationConfig.tracksConfig do
-      result[#result + 1] = _("${value}") % { value = stationConfig.tracksConfig[i].num }
-    end
-  else
-    result = { _("1"), _("2"), _("3"), _("4"), _("5") }
-  end
-
-  return result
-end
-
-local function makeSizeIndexValues(stationConfig, platformConfig)
-  local result = { }
-
-  if stationConfig ~= nil and platformConfig ~= nil then
-    for i = 1, #platformConfig do
-      result[#result + 1] = _("${value} m") % { value = #platformConfig[i].firstPlatformParts * stationConfig.segmentLength }
-    end
-  else
-    result = { _("1 m"), _("2 m"), _("3 m") }
-  end
-
-  return result
-end
-]]--
+-- logging setup
+local log = require "log"
+log.usecolor = false
+-- choices: "trace", "debug", "info", "warn", "error", "fatal"
+log.level = "debug"
 
 
+--
+-- utility functions
+--
 
 
---[[
-
-TODO reduce segment length to 40, add way more segments, calculate the proper segment index from selection
-
-number of tracks
-* first row: 1..8. second row: +0, +8, +16+, +24, +32
-
-track length
-* first row: 40, 80, 120, 160, 200. second row: +200, +400, +600, +800
-* need to change `config.segmentLength = 40` in constructionutil -> does not work
-* there's no proper entry points for that, so I'll probably have to copy most of that file :/
-* maybe add another file with copied stuff, so it remains separate from my actual code
-
- ]]
-
-
--- Print contents of `tbl`, with indentation.
--- `indent` sets the initial level of indentation.
-function tprint (tbl, indent)
-  if not indent then indent = 2 end
+--- Print the contents of a table, recursively, with indentation.
+-- @param tbl the table to print
+-- @param indent sets the initial level of indentation (default=2)
+--
+function tprint (tbl, indent, printFunction)
+  if indent == nil then indent = 2 end
+  if printFunction == nil then printFunction = print end
   for k, v in pairs(tbl) do
-    local formatting = string.rep("  ", indent) .. k .. ": "
+    local formatting = string.rep(" ", indent) .. k .. ": "
     if type(v) == "table" then
-      print(formatting)
-      tprint(v, indent+1)
+      printFunction(formatting)
+      tprint(v, indent+1, printFunction)
     else
-      print(formatting .. tostring(v))
+      printFunction(formatting .. tostring(v))
     end
   end
 end
 
-
---- make a new train station
--- overrides `constructionutil.makeTrainStationNew`
--- adjust the configuration, before the original function gets called
--- @param config
---
---[[
-function constructionutil.makeTrainStationNew(config)
-  config.segmentLength = 20   -- TODO check why this doesn't help
-  config.numTracks = 5
-  return super.makeTrainStationNew(config)
+--- return the keys of a table in a new array
+function getTableKeys(tbl)
+  local keys = {}
+  local n=0
+  for k,v in pairs(tbl) do
+    n=n+1
+    keys[n]=k
+  end
+  return keys
 end
---]]
+
+--- checks whether the contents of two arrays are equal
+function areArraysEqual(ar1, ar2)
+  if #ar1 ~= #ar2 then
+    return false
+  else
+    for i=1, #ar1 do
+      if ar1[i] ~= ar2[i] then
+        return false
+      end
+    end
+    return true
+  end
+end
+
+--- creates a string representation of an array's contents (non-recursive)
+function arrayToString(ar)
+  return "[" .. table.concat(ar, ", ") .. "]"
+end
+
+--- creates a string representation of a table's contents (non-recursive)
+function tableToString(tbl)
+  local ar = {}
+  local n=0
+  for k, v in pairs(tbl) do
+    n = n + 1
+    ar[n] = tostring(k) .. ": " .. tostring(v)
+  end
+  return arrayToString(ar)
+end
+
 
 --
--- parameter definitions
+-- ui parameters
 --
 
 
@@ -110,6 +102,11 @@ stationmod.trackLengthToAdd = { 0, 400, 800, 1200 }
 stationmod.trackLengthToAddStr = { _("+0"), _("+400m"), _("+800m"), _("+1200m") }
 
 
+--- this function overrides the original makeTrainStationParams from paramsutil.
+-- it redeclares the default paramteres and adds the custom components that are required for this mod.
+-- @param stationConfig the station's configuration (not required here)
+-- @param platformConfig an array of available platform config options (also not needed)
+--
 function paramsutil.makeTrainStationParams(stationConfig, platformConfig)
   return {
     {
@@ -124,7 +121,7 @@ function paramsutil.makeTrainStationParams(stationConfig, platformConfig)
       values = stationmod.numTracksToAddStr,
       defaultIndex = 0
     },
-    {   -- TODO change name
+    {
       key = "trackLength",
       name = _("Platform length"),
       values = stationmod.trackLengthStr,
@@ -147,103 +144,175 @@ function paramsutil.makeTrainStationParams(stationConfig, platformConfig)
 end
 
 
--- TODO fix compatibility issues with other mods, or move to separate buildings...
+--
+-- train station config
+--
 
--- store the most recent state to see if this mod is currently active
+
+-- store the most recent state to decide if this mod can be safely activated
 stationmod.state = {}
-stationmod.state.lastNumTracks = 0
-stationmod.state.numTracksToAdd = 0
-stationmod.state.numTracksIndex = 0
+stationmod.state.lastStationName = ""
+stationmod.state.lastParams = {}
+stationmod.state.selectedStationChanged = false
+stationmod.state.enabled = false
 
 
+--- this function overrides the original makeTrainStationConfig from railstationconfigutil.
+-- it's purpose is to decide, whether the currently selected station is compatible with this mod
+-- and then to either build a modded station config or to fall back to the default config
+-- @param params the gui parameters
+-- @param stationConfig the station's configuration (tracks, platforms, you name it)
+-- @param stationBuilding definition of the station's building
+-- @param platformConfig an array of available platform config options
+--
 function railstationconfigutil.makeTrainStationConfig(params, stationConfig, stationBuilding, platformConfig)
 
-  print("params:\n")
-  for k, v in pairs(params) do
-    print(tostring(k) .. ": " .. tostring(v))
-  end
-  print("\n\n")
-  --tprint(params)
-  print("stationConfig:")
-  tprint(stationConfig)
-  --print("stationBuilding:")
-  --tprint(stationBuilding)
-  --print("\n\nplatformConfig:\n")
-  --tprint(platformConfig)
-  --print("\n\n")
+  -- log some stuff, for debugging...
+  log.debug("--- makeTrainStationConfig ---")
+  log.debug("params: " .. tableToString(params))
+  log.trace("params:")
+  tprint(params, 2, log.trace)
+  log.trace("stationConfig:")
+  tprint(stationConfig, 2, log.trace)
+  log.trace("stationBuilding:")
+  tprint(stationBuilding, 2, log.trace)
+  log.trace("platformConfig:")
+  tprint(platformConfig, 2, log.trace)
 
-  -- in case you're wondering about all those +1 to the indices
-  -- lua is 1-based, while every same programming language is 0-based,
-  -- and lua gets called from c++ here, so all parameters we get are 0-based...
+  --
+  -- first, let's gather some useful information
+  --
 
-  -- TODO detect whether this is the active mod by storing the last value of numTracks and numTracksToAdd and numTracksIndex
-  -- if numTracksIndex was changed last, but none of the others, another station is active
-  -- this does not work, behaviour is pretty inconsistent...
+  -- at least one of the new parameters is nil
+  local newParamNil = params.numTracks == nil or params.numTracksToAdd == nil or params.trackLength == nil or params.trackLengthToAdd == nil
+  -- at least one of the old parameters is nil
+  local oldParamNil = params.numTracksIndex == nil or params.sizeIndex == nil
+  -- at least one of the old parameters is visible
+  local oldParamVisible = params.numTracksIndex ~= nil or params.sizeIndex ~= nil
+  -- generate a name from the stationConfig. sadly, this is not guaranteed to be unique
+  local stationName = tostring(stationConfig.type) .. "-" .. tostring(stationConfig.stationType) .. "-" .. tostring(stationConfig.name)
 
-  -- TODO look at stationConfig: name + stationType + type
-  -- if name changes and newParamNil -> disable mod
-  -- only re-enable when name changes and not newParamNil
+  --[[
+  now, let's detect whether the user switched to another station in the UI.
+  we have 3 ways of detecting that a new station has been selected in the menu:
+  1. the station name has changed
+     * this can be easily figuered out, but sadly, modders sometimes use the same station names as the vanilla stations
+  2. certain parameters are missing, depending on the previous mod state
+     * this can be either
+       - mod was enabled, but now mod params are missing
+       - mod was disabled, but now old params are missing
+     * if we jsut wanted to detect, whether the stationmod is available or not, we're done here
+     * if we want to detect switches between any station, whether it's modded or not, we need one more step
+  3. the list of ui parameter keys has changed
+     * ok, some background here. this is how params behave:
+       - new station selected in gui (first call): only params that are visible in the gui are available
+       - parameter changed in same station (second call): all params that have been ever set are visible
+       - parameter changed in same station (subsequent calls): parameters remain stable
+     * this mindfuck is the reason why we can't have nice things
+     * here's how we fix this:
+       - when a new station has been selected, store this event (stationmod.state.selectedStationChanged = true)
+       - next time, when selectedStationChanged is true, store the list of parameter keys and set it to false again
+       - now check each time, if the list of parameter keys has changed. If it did, a new station has been selected
+  ]]--
 
-  -- avoiding compatibility issues is impossible using this approach -> just add another station...
-  -- yet, that will make this mod mandatory. if you remove it, the savegame is lost...
-  -- TODO find out why some mods suck at this and fix it
+  --
+  -- 1. has the station name changed?
+  --
 
+  local stationNameChanged = stationName ~= stationmod.state.lastStationName
 
-  -- at least one of the new parameters is nil -> some other mod may be blocking them
-  local newParamNil = params.numTracks == nil or params.numTracksToAdd == nil
-  -- an old parameter is visible -> some other mod may have enabled this
-  local oldParamsVisible = params.numTracksIndex ~= nil
-  -- only enable the mod, if all new params are set and no old params are visible
-  local enabled = not newParamNil -- or oldParamsVisible)
+  --
+  -- 2. are any parameters missing?
+  --
 
+  -- the station mod has been disabled (was enabled, but mod params are missing)
+  local stationModDisabled = stationmod.state.enabled and newParamNil
+  -- the station mod has been enabled (was disabled, but old params are missing)
+  local stationModEnabled = not stationmod.state.enabled and oldParamNil
 
-  local trackParamsNotNil = params.numTracks ~= nil and params.numTracksToAdd ~= nil
-  local numTracksChanged = params.numTracks ~= stationmod.state.lastNumTracks
-  local numTracksToAddChanged = params.numTracksToAdd ~= stationmod.state.numTracksToAdd
-  local numTracksIndexChanged = params.numTracksIndex ~= stationmod.state.lastNumTracksIndex
-  local active = trackParamsNotNil and (not numTracksIndexChanged or numTracksChanged or numTracksToAddChanged)
-  stationmod.state.lastNumTracks = params.numTracks
-  stationmod.state.numTracksToAdd = params.numTracksToAdd
-  stationmod.state.numTracksIndex = params.numTracksIndex
+  --
+  -- 3. has the list of ui parameter keys changed?
+  --
 
-
-  if not enabled then
-    --params.numTracks = 0
-    -- reset the track adder, if the user switches to an unsupported station
-    print("at least one null param -> reset!")
-    --params.numTracksToAdd = 0
-  end
-
-
-  local numTracks
-  local trackConfigIndex
-
-  -- see if this mod's custom parameters have been loaded (may be overriden by other mods)
-  if enabled then
-    -- calculate the intended number of tracks
-    numTracks = stationmod.numTracks[params.numTracks+1] + stationmod.numTracksToAdd[params.numTracksToAdd+1]
-    -- set the original parameter, so we don't have to change existing code
-    params.numTracksIndex = numTracks-1
-    -- calculate the track config index (must not exceed the length of the tracksConfig)
-    trackConfigIndex = math.min(numTracks, #stationConfig.tracksConfig)
+  -- current list of parameter key
+  local paramKeys = getTableKeys(params)
+  -- is the list of parameters equal to the previous one?
+  local paramsChanged = false
+  -- has the selected station changed in the previous call to this function?
+  if stationmod.state.selectedStationChanged then
+    -- store current parameters and reset event
+    stationmod.state.lastParams = paramKeys
+    stationmod.state.selectedStationChanged = false
   else
-    -- fall back to the default behaviour
-    numTracks = stationConfig.tracksConfig[params.numTracksIndex + 1].num
-    trackConfigIndex = params.numTracksIndex + 1
+    -- compare stored parameters to the last known state
+    paramsChanged = not areArraysEqual(paramKeys, stationmod.state.lastParams)
   end
 
+  --
+  -- evaluate the results and decide, whether the mod is to be enabled
+  --
 
+  -- check if the user switched to a new station in the menu
+  if (stationNameChanged or stationModDisabled or stationModEnabled or paramsChanged) then
 
-  local selectedPlatformConfig
-  if enabled then
-    local trackLength = (params.trackLength+1) + #stationmod.trackLength * (params.trackLengthToAdd)
-    stationConfig.numSizes = { trackLength }
-    platformConfig = railstationconfigutil.makePlatformConfig(stationConfig)
-    selectedPlatformConfig = platformConfig[1]
+    -- find out what happened and alter state
+    local switched = "switched to another station with the same name"
+    if stationNameChanged then
+      log.debug("selected station changed from \"" .. stationmod.state.lastStationName .. "\" to \"" .. stationName .. "\"")
+      stationmod.state.lastStationName = stationName
+    elseif stationModDisabled then
+      log.debug(switched .. " (mod was enabled, but mod parameters are gone)")
+    elseif stationModEnabled then
+      log.debug(switched .. " (mod was disabled, but old parameters are gone)")
+    elseif paramsChanged then
+      log.debug(switched .. " (ui parameters suddenly changed)")
+    end
+    stationmod.state.selectedStationChanged = true
+
+    -- decide, whether the mod will be enabled for the selected station
+    stationmod.state.enabled = not newParamNil and oldParamNil
+    log.debug("all new params availalbe: " .. tostring(not newParamNil) .. ", any old params visible: " .. tostring(oldParamVisible) .. " -> stationmod enabled: " .. tostring(stationmod.state.enabled))
+  end
+
+  if stationmod.state.enabled then
+    -- call the mod config, if selected station is supported
+    log.debug("generating stationmod config")
+    return stationmod.makeTrainStationConfig(params, stationConfig, stationBuilding, platformConfig)
   else
-    selectedPlatformConfig = platformConfig[params.sizeIndex + 1]
+    -- fall back to the default config, if there is reason for concern
+    log.debug("generating default config (stationmod disabled)")
+    return super.makeTrainStationConfig(params, stationConfig, stationBuilding, platformConfig)
   end
+end
 
+
+--- this is the custom makeTrainStationConfig function that gets called when the selected station supports this mod.
+-- this is the case for all vanilla stations and certain mod stations that didn't temper with the track configuration.
+-- @param params the gui parameters
+-- @param stationConfig the station's configuration (tracks, platforms, you name it)
+-- @param stationBuilding definition of the station's building
+-- @param platformConfig an array of available platform config options
+--
+function stationmod.makeTrainStationConfig(params, stationConfig, stationBuilding, platformConfig)
+
+  -- in case you're wondering about all those +1 to the indices:
+  -- lua is 1-based, while every same programming language is 0-based.
+  -- lua gets called from c++ here, so all parameters we get are 0-based...
+
+  -- calculate the intended number of tracks
+  local numTracks = stationmod.numTracks[params.numTracks+1] + stationmod.numTracksToAdd[params.numTracksToAdd+1]
+  -- set the original parameter, so we don't have to change existing code
+  params.numTracksIndex = numTracks-1
+  -- calculate the track config index (must not exceed the length of the tracksConfig)
+  local trackConfigIndex = math.min(numTracks, #stationConfig.tracksConfig)
+
+  -- calculate the combined track length index
+  local trackLengthIndex = (params.trackLength+1) + #stationmod.trackLength * (params.trackLengthToAdd)
+  -- adjust the stationConfig and generate a new platformConfig
+  stationConfig.numSizes = { trackLengthIndex }
+  platformConfig = railstationconfigutil.makePlatformConfig(stationConfig)
+
+  log.debug("building " .. tostring(numTracks) .. " tracks and " .. tostring(trackLengthIndex) .. " platform segments")
 
   return {
     -- multiply the number of tracks by this value
@@ -264,11 +333,12 @@ function railstationconfigutil.makeTrainStationConfig(params, stationConfig, sta
     stairsPlatform = stationConfig.stairsPlatform,
     buildingWidth = stationBuilding[trackConfigIndex].width,
     stationBuilding = stationBuilding[trackConfigIndex].building,
-    platformConfig = selectedPlatformConfig,
+    platformConfig = platformConfig[1],
     trackType = stationConfig.trackTypes[(params.trackType or 0) + 1],
     catenary = params.catenary == 1,
     type = stationConfig.type
   }
 end
 
+log.info("Klamann's stationmod has been loaded")
 return stationmod
