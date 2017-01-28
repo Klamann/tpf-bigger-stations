@@ -95,6 +95,7 @@ end
 function stationmod.makePlatformConfigPassenger(stationConfig)
   local result = {}
   local numSizes = stationConfig.numSizes or { 1, 2, 3, 4 }
+  local singleTrack = stationConfig.singleTrack or False
 
   if (stationConfig.stationType == "head") then
 
@@ -212,15 +213,16 @@ function stationmod.makePlatformConfigPassenger(stationConfig)
       config.headParts = headParts
 
 
-      local numExt = i - 1
+      local numExt = i - 2
+      local hasOuterRoof = numExt > 2
 
-      -- start of through station (skip for 40m station)
-      if i > 1 then
+      -- start of through station (skip for 40m station, except if singleTrack, then skip center)
+      if i > 1 or singleTrack then
         config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_start.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_start.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_start_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
 
-        if numExt > 1 then
+        if hasOuterRoof then
           config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_start.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         else
           config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
@@ -229,126 +231,135 @@ function stationmod.makePlatformConfigPassenger(stationConfig)
         config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
       end
 
-
+      -- extensions to the center (add for >80m station)
       for j = numExt, 1, -1 do
-        if (j % 2 == 0) then
-          config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        local stairs = (j-3) % 4 == 0
+        if stairs then
+          --config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
           config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         else
-          config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          --config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
           config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         end
 
-        if (j % 2 == 0) then
-          config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        if stairs then
+          --config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
           config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         else
-          config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          --config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
           config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         end
 
-        if (j % 2 == 0) then
-          config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        if stairs then
+          --config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
           config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         else
-          config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          --config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
           config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         end
 
-        if numExt > 1 then
-          if j > 1 then
+        if hasOuterRoof then
+          if j > 2 then
             config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-            config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-          elseif j == 1 then
+            --config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          elseif j == 2 then
             config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_end.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-            config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+            --config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
           else
             config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
-            config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+            --config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
           end
         else
-          config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+          --config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
           config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
         end
 
-        config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        --config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
 
+        --config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
+        config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
+      end
+
+      -- center of the through statiosn (always visible, only elements of the 40m station, except if 40m and just one platform)
+      if i > 1 or not singleTrack then
+        config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat_empty.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat_empty.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+
+        config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+        config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+        if i > 1 then
+          config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        else
+          config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "", 0 }
+          config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "", 0 }
+        end
         config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
         config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
       end
 
-      -- center of the through station (always visible, only elements of the 40m station)
-      config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat_empty.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat_empty.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-
-
-      config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
-      config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
-      config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
-      config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
-
+      -- extension away from the center (add for >80m station)
       for j = 1, numExt do
-        if (j % 2 == 0) then
+        local stairs = (j-3) % 4 == 0
+        if stairs then
           config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-          config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          --config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         else
           config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-          config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          --config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         end
 
-        if (j % 2 == 0) then
+        if stairs then
           config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-          config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          --config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         else
           config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-          config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          --config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         end
 
-        if (j % 2 == 0) then
+        if stairs then
           config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-          config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          --config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         else
           config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-          config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          --config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         end
 
-        if numExt > 1 then
-          if j == 1 then
-            config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+        if hasOuterRoof then
+          if j == 2 then
+            --config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
             config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_start.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-          elseif j > 1 then
-            config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+          elseif j > 2 then
+            --config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
             config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
           else
-            config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+            --config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
             config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
           end
         else
-          config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+          --config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
           config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
         end
 
-        config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        --config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_repeat.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
 
-        config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
+        --config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
         config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
       end
 
-      -- end of through station (skip for 40m station)
-      if i > 1 then
+      -- end of through station (skip for 40m station, except if singleTrack, then skip center)
+      if i > 1 or singleTrack then
         config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_first_end.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_end.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_end_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
 
-        if numExt > 1 then
+        if hasOuterRoof then
           config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_end.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         else
           config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
@@ -363,9 +374,11 @@ function stationmod.makePlatformConfigPassenger(stationConfig)
   return result
 end
 
+
 function stationmod.makePlatformConfigCargo(stationConfig)
   local result = { }
   local numSizes = stationConfig.numSizes or { 1, 2, 3, 4 }
+  local singleTrack = stationConfig.singleTrack or False
 
   if (stationConfig.stationType == "head") then
 
@@ -462,8 +475,8 @@ function stationmod.makePlatformConfigCargo(stationConfig)
 
       local numExt = i - 2
 
-      -- start of through station (skip for 40m station)
-      if i > 1 then
+      -- start of through station (skip for 40m station, except if singleTrack, then skip center)
+      if i > 1 or singleTrack then
         config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_start_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_start.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_start_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
@@ -484,20 +497,22 @@ function stationmod.makePlatformConfigCargo(stationConfig)
         config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
       end
 
-      -- center of the through station (always visible, only elements of the 40m station)
-      config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+      -- center of the through station (always visible, only elements of the 40m station, except if 40m and just one platform)
+      if i > 1 or not singleTrack then
+        config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
 
-      config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
-      config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
-      config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "", 0 }
-      config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "", 0 }
-      config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
-      config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
+        config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+        config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+        config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "", 0 }
+        config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "", 0 }
+        config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
+        config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
+      end
 
       -- extension away from the center (add for >80m station)
       for j = 1, numExt do
@@ -510,8 +525,8 @@ function stationmod.makePlatformConfigCargo(stationConfig)
         config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
       end
 
-      -- end of through station (skip for 40m station)
-      if i > 1 then
+      -- end of through station (skip for 40m station, except if singleTrack, then skip center)
+      if i > 1 or singleTrack then
         config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_end_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_end.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
         config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_end_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
@@ -546,10 +561,10 @@ stationmod.numTracks = { 1, 2, 3, 4, 5, 6, 7, 8 }
 stationmod.numTracksStr = { _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8") }
 stationmod.numTracksToAdd = { 0, 8, 16, 24, 32, 40 }
 stationmod.numTracksToAddStr = { _("+0"), _("+8"), _("+16"), _("+24"), _("+32"), _("+40") }
-stationmod.trackLength = { 80, 160, 240, 320, 400 }
-stationmod.trackLengthStr = { _("80m"), _("160m"), _("240m"), _("320m"), _("400m") }
-stationmod.trackLengthToAdd = { 0, 400, 800, 1200 }
-stationmod.trackLengthToAddStr = { _("+0"), _("+400m"), _("+800m"), _("+1200m") }
+stationmod.trackLength = { 40, 80, 120, 160, 200 }
+stationmod.trackLengthStr = { _("40 m"), _("80 m"), _("120 m"), _("160 m"), _("200 m") }
+stationmod.trackLengthToAdd = { 0, 200, 400, 600, 800 }
+stationmod.trackLengthToAddStr = { _("+0"), _("+200"), _("+400"), _("+600"), _("+800") }
 
 
 --- this function overrides the original makeTrainStationParams from paramsutil.
@@ -760,8 +775,12 @@ function stationmod.makeTrainStationConfig(params, stationConfig, stationBuildin
   local trackLengthIndex = (params.trackLength+1) + #stationmod.trackLength * (params.trackLengthToAdd)
   -- adjust the stationConfig and generate a new platformConfig
   stationConfig.numSizes = { trackLengthIndex }
-  stationConfig.numTracks = numTracks
+  stationConfig.singleTrack = numTracks == 1 and params.streetSecondConnection == 0
   platformConfig = stationmod.makePlatformConfig(stationConfig)
+  -- always build the smallest station building, if the shortest available track is used
+  if trackLengthIndex == 1 then
+    trackConfigIndex = 1
+  end
 
   log.debug("building " .. tostring(numTracks) .. " tracks and " .. tostring(trackLengthIndex) .. " platform segments")
 
@@ -790,15 +809,6 @@ function stationmod.makeTrainStationConfig(params, stationConfig, stationBuildin
     type = stationConfig.type
   }
 end
-
-
-
-
-
-
-
-
-
 
 
 log.info("Klamann's stationmod has been loaded")
