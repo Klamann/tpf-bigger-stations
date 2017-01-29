@@ -5,8 +5,10 @@
 
 ## Features
 
-* more length options: 40m to 1000m, in steps of 40m
-* more tracks: from 1 to 40
+* build stations with up to 1000m length
+* adds a 40m station and allows you to build in steps of 40m (e.g. 120m or 200m are now possible)
+* more tracks: build anything from 1 to 48 tracks
+* fixes a bug in TpF where the ground does not get properly aligned when building stations with a second street connection
 * comes with free cake. here you go: 🎂
 
 ## Compatibility

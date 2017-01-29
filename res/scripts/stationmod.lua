@@ -4,7 +4,7 @@ station mod by Klamann
 
 ]]--
 
---local constructionutil = require "constructionutil"
+local constructionutil = require("constructionutil_bugfix")
 local paramsutil = require "paramsutil"
 local railstationconfigutil = require "railstationconfigutil"
 local stationmod = {}
