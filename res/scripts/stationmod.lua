@@ -95,7 +95,9 @@ end
 function stationmod.makePlatformConfigPassenger(stationConfig)
   local result = {}
   local numSizes = stationConfig.numSizes or { 1, 2, 3, 4 }
-  local singleTrack = stationConfig.singleTrack or False
+  local numTracks = stationConfig.numTracks or 1
+  local secondStreet = stationConfig.streetSecondConnection or False
+  local singleTrack = numTracks == 1 and not secondStreet
 
   if (stationConfig.stationType == "head") then
 
@@ -126,25 +128,27 @@ function stationmod.makePlatformConfigPassenger(stationConfig)
 
       config.headParts = headParts
 
-
-      -- first 20 m
-
-      config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_open_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_open.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-      config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_open_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
-
-      config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
-      config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "", 0 }
-      config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
-
-      -- add roof for stations >40m
-
-      if i > 1 then
-        config.middlePlatformRoof[#config.middlePlatformRoof] = { part = "station/train/${type}/${year}/platform_double_roof_start.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+      -- station head, i.e. where the building is (20m)
+      local defaultHead = i > 1 or not secondStreet or ((numTracks - 2) % 4 == 0)
+      if defaultHead then
+        config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_open_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_open.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_open_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0 }
+      else
+        config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+        config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
       end
 
-      -- extend by 40m each time
+      config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "", 0 }
+      if i > 1 then   -- add the roof for stations >40m
+        config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_start.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+      else
+        config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "", 0 }
+      end
+      config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
 
+      -- extend by 40m each time
       for j = 2, i do
 
         config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_repeat_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
@@ -172,14 +176,17 @@ function stationmod.makePlatformConfigPassenger(stationConfig)
 
       end
 
-      -- last 20m
-
+      -- station foot, i.e. where the rails leave the station (20m)
       config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_end_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
       config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_end.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
       config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_end_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
 
       config.firstPlatformRoof[#config.firstPlatformRoof + 1] = { part = "",0 }
-      config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_end.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+      if i > 1 then   -- add the roof for stations >40m
+        config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "station/train/${type}/${year}/platform_double_roof_end.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
+      else
+        config.middlePlatformRoof[#config.middlePlatformRoof + 1] = { part = "", 0 }
+      end
       config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "",0 }
 
     end
@@ -369,7 +376,7 @@ function stationmod.makePlatformConfigCargo(stationConfig)
 
       config.headParts = headParts
 
-      -- station head (20m)
+      -- station head, i.e. where the building is (20m)
       config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
       config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_stairs.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
       config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_stairs_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
@@ -395,7 +402,7 @@ function stationmod.makePlatformConfigCargo(stationConfig)
         config.lastPlatformRoof[#config.lastPlatformRoof + 1] = { part = "", 0 }
       end
 
-      -- station foot (20m)
+      -- station foot, i.e. where the rails leave the station (20m)
       config.firstPlatformParts[#config.firstPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_end_first.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
       config.middlePlatformParts[#config.middlePlatformParts + 1] = { part = "station/train/${type}/${year}/platform_double_end.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
       config.lastPlatformParts[#config.lastPlatformParts + 1] = { part = "station/train/${type}/${year}/platform_single_end_last.mdl" % { type = stationConfig.type, year = stationConfig.name }, orientation = 0}
@@ -736,8 +743,10 @@ function stationmod.makeTrainStationConfig(params, stationConfig, stationBuildin
   local trackLengthIndex = (params.trackLength+1) + #stationmod.trackLength * (params.trackLengthToAdd)
   -- adjust the stationConfig and generate a new platformConfig
   stationConfig.numSizes = { trackLengthIndex }
-  stationConfig.singleTrack = numTracks == 1 and params.streetSecondConnection == 0
+  stationConfig.numTracks = numTracks
+  stationConfig.streetSecondConnection = params.streetSecondConnection ~= 0
   platformConfig = stationmod.makePlatformConfig(stationConfig)
+
   -- always build the smallest station building, if the shortest available track is used
   if trackLengthIndex == 1 then
     trackConfigIndex = 1
