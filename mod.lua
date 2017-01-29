@@ -11,7 +11,7 @@ return {
         name = "Klamann",
         role = "CREATOR",
         text = "",
-        steamProfile = "klamann",
+        steamProfile = "Klamann",
         tfnetId = 21474,
       },
     },
