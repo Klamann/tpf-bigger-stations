@@ -10,6 +10,7 @@ dist_dir = "./dist"
 app_dir_base = "_".join((author, app_name.replace(" ", "_"), "1"))
 app_dir = os.path.join(build_dir, app_dir_base)
 zip_name = "_".join((author, app_name.replace(" ", "_"), version))
+zip_file = os.path.join(dist_dir, zip_name)
 
 distribution_files = [
     "res",
@@ -38,7 +39,8 @@ def build():
     os.makedirs(dist_dir, exist_ok=True)
     for file in distribution_files:
         copyanything(file, os.path.join(app_dir, file))
-    shutil.make_archive(os.path.join(dist_dir, zip_name), 'zip', root_dir=build_dir, base_dir=app_dir_base)
+    shutil.make_archive(zip_file, 'zip', root_dir=build_dir, base_dir=app_dir_base)
+    print("archive has been created: '{}.zip'".format(zip_file))
 
 
 if __name__ == "__main__":
