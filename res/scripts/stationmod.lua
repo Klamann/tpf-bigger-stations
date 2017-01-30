@@ -16,7 +16,7 @@ super.makeTrainStationConfig = railstationconfigutil.makeTrainStationConfig
 
 
 -- logging setup
-local log = require "log"
+local log = require "stationmod_log"
 log.usecolor = false
 -- choices: "trace", "debug", "info", "warn", "error", "fatal"
 log.level = "debug"
