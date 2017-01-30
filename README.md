@@ -2,6 +2,8 @@
 
 This is a mod for the game [Transport Fever](http://www.transportfever.com/). It adds more options to the train stations available in the game, like more tracks and longer platforms.
 
+![](workshop_preview.jpg)
+
 ## About
 
 For a detailed description, see [Workshop.md](./Workshop.md).
