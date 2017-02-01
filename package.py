@@ -3,13 +3,13 @@ import shutil, errno, os
 
 author = "klamann"
 app_name = "bigger train stations"
-version = "1.0-beta"
+version = "1.0-beta2"
 
 build_dir = "./.build"
 dist_dir = "./dist"
 app_dir_base = "_".join((author, app_name.replace(" ", "_"), "1"))
 app_dir = os.path.join(build_dir, app_dir_base)
-zip_name = "_".join((author, app_name.replace(" ", "_"), version))
+zip_name = "_".join((app_name.replace(" ", "-"), version))
 zip_file = os.path.join(dist_dir, zip_name)
 
 distribution_files = [

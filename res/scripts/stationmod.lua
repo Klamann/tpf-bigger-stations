@@ -1,6 +1,26 @@
 --[[
 
-station mod by Klamann
+Bigger Train Stations by Klamann
+
+adds more options to all vanilla train stations and to modded stations that don't change the default ui parameters.
+
+this mod overrides these functions:
+- makeTrainStationParams from paramsutil: to change the station's ui parameters
+- makeTrainStationConfig from railstationconfigutil: to actually apply the changes
+
+As this mod changes the vanilla train stations instead of redeclaring new stations,
+compatibility with other mods becomes an issue. Therefore, makeTrainStationConfig contains
+a mod detection routine which tries to find out, whether this mod can be safely applied
+to the currently selected train station.
+If it looks like the mod cannot be safely enabled, it calls the original makeTrainStationConfig
+(or whatever is currently stored in railstationconfigutil)
+
+Get the latest version of this mod from
+https://www.transportfever.net/filebase/index.php/Entry/2683
+
+Feedback & Support
+https://www.transportfever.net/index.php/Thread/7379
+
 
 ]]--
 
@@ -12,6 +32,7 @@ local stationmod = {}
 
 -- store copies of functions that will be overriden in the `super` table
 local super = {}
+super.makeTrainStationParams = paramsutil.makeTrainStationParams
 super.makeTrainStationConfig = railstationconfigutil.makeTrainStationConfig
 
 
@@ -801,5 +822,5 @@ function stationmod.makeTrainStationConfig(params, stationConfig, stationBuildin
 end
 
 
-log.info("Klamann's stationmod has been loaded")
+log.info("Klamann's \"Bigger Train Stations\" has been loaded")
 return stationmod
