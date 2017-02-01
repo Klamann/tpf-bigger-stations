@@ -19,7 +19,7 @@ super.makeTrainStationConfig = railstationconfigutil.makeTrainStationConfig
 local log = require "stationmod_log"
 log.usecolor = false
 -- choices: "trace", "debug", "info", "warn", "error", "fatal"
-log.level = "debug"
+log.level = "debug"   -- TODO set to "error" for release...
 
 
 --
@@ -723,7 +723,7 @@ function railstationconfigutil.makeTrainStationConfig(params, stationConfig, sta
     stationmod.state.selectedStationChanged = true
 
     -- decide, whether the mod will be enabled for the selected station
-    stationmod.state.enabled = not newParamNil and oldParamNil
+    stationmod.state.enabled = not newParamNil  -- and oldParamNil
     log.debug("all new params availalbe: " .. tostring(not newParamNil) .. ", any old params visible: " .. tostring(oldParamVisible) .. " -> stationmod enabled: " .. tostring(stationmod.state.enabled))
   end
 
