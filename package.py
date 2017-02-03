@@ -3,7 +3,7 @@ import shutil, errno, os
 
 author = "klamann"
 app_name = "bigger train stations"
-version = "1.0-beta2"
+version = "1.0"
 
 build_dir = "./.build"
 dist_dir = "./dist"

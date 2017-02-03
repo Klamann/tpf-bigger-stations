@@ -12,13 +12,15 @@ You can get a copy of the mod from [transportfever.net](https://www.transportfev
 
 To get support, please visit [this thread on transportfever.net](https://www.transportfever.net/index.php/Thread/7379-Gr%C3%B6%C3%9Fere-Bahnh%C3%B6fe/) (you may comment in german or english).
 
-## Build
+## Development
 
-Mods for Transport Fever are written in Lua Script and therefore no compilation or other build steps are required. There is however a script that creates a distribution package:
+Mods for Transport Fever are written in Lua Script and therefore no compilation or other build steps are required. There is however a python script that creates a distribution package:
 
     python package.py
 
 This will create a zip-file with all required files of this mod in the dist-folder.
+
+If you are interested to learn, how this mod works: there are lots of hints and comments in the source code, especially in [stationmod.lua](./res/scripts/stationmod.lua).
 
 ## License
 

@@ -40,7 +40,7 @@ super.makeTrainStationConfig = railstationconfigutil.makeTrainStationConfig
 local log = require "stationmod_log"
 log.usecolor = false
 -- choices: "trace", "debug", "info", "warn", "error", "fatal"
-log.level = "debug"   -- TODO set to "error" for release...
+log.level = "error"
 
 
 --
@@ -111,6 +111,54 @@ end
 --
 -- platform config
 --
+
+--[[
+
+the platform config aims to extend the capabilities of all vanilla train stations
+while remaining consistent with the layout of the original station designs.
+
+general information about train stations:
+* each station is built from platform pieces defined in `.mdl`-files
+* the station building dialogue creates a composition of platform pieces, buildings, train tracks and terrain adjustments
+* after a station was built, the original code that composed the station is not required anymore.
+  Just the arrangement of the pieces gets saved. Only if custom models were used, the mod must remain active.
+
+vanilla station design:
+* each station is built from platform pieces that have a length of 20m each
+* there are 3 parallel positions, where a platform piece can occur:
+  - first: the platform next to the first track of the station (next to the building on through stations)
+  - middle: all platforms that have a track on both sides
+  - last: the platform next to the last track, but only if there is just one track next to it (else it's a middle platform)
+* we can define the platform pieces and the roof of that platform piece separately.
+  A roof is not a requirement for any platform.
+* there are 3 arrays where we can attach platform pieces: firstPlatformParts, middlePlatformParts and lastPlatformParts.
+  same goes for the platform roofs (firstPlatformRoof, middlePlatformRoof, lastPlatformRoof)
+* stations are designed by adding platform pieces to these arrays.
+  For terminal stations, the first piece is the one closest to the station building.
+  For through stations, the beginning does not really matter, because the station building is always placed at the center.
+* all vanilla stations are built in 80m blocks, so with each increase in size, 4 station pieces are added
+  (2 on each side of the through station)
+
+station design by this mod:
+* the modded station uses only blocks that were used by vanilla stations. No new models have been added to the game.
+* stations are built in 40m blocks, so with each increase in size, 2 station pieces are added (1 on each side of the through station)
+* All stations of the original sizes (80m, 160m, 240m, 320m) are arranged exactly as the vanilla stations
+  (each platform piece is in the same position)
+* All stations in between and larger than the original sizes are built so that they naturally extend the station's layout.
+* the smallest available station is 40m long. This works fine for terminal stations, but it required some hacking of
+  through stations, as the developer's didn't have such small stations in mind when they designed the vanilla platform pieces
+  - if the station has just one track and no second street connection, only the first and last platform piece is used.
+    There are no stairs.
+  - if there is more than one track or a second street connection, we need stairs.
+    The first platform piece gets stairs, while the last one remains as before (no stairs).
+  - the piece that has stairs is not intended to be placed at the start/end of a station, therefore it does not have
+    an edge at the end of the platform. This is barely visible for cargo stations, which are quite flat, but not
+    very pretty on modern passenger stations. Unfortunately, this cannot be fixed without adding custom platform pieces,
+    which would add a hard dependency on this mod for savegames. This however is a non-goal of this mod, so it won't happen.
+  - tl;dr: use some other mod, if you want pretty 40m stations with more than 1 track ;)
+
+--]]
+
 
 
 function stationmod.makePlatformConfigPassenger(stationConfig)
