@@ -841,8 +841,9 @@ function stationmod.makeTrainStationConfig(params, stationConfig, stationBuildin
   local numTracks = stationmod.numTracks[params.numTracks+1] + stationmod.numTracksToAdd[params.numTracksToAdd+1]
   -- limit the number of tracks so no negative platform lengths can occur
   if curveIndex == 6 then
-    -- for a curve index of 6 (== "-3"), the number of tracks must not exceed 43
-    numTracks = math.min(numTracks, 43)
+    -- for a curve index of 6 (== "-3"), the number of tracks must not exceed 42 for passenger and 32 for cargo stations
+    local limit = ternary(stationConfig.type == "passenger", 42, 32)
+    numTracks = math.min(numTracks, limit)
     log.debug("numTracks (adjusted): " .. tostring(numTracks))
   end
   -- calculate the track config index (must not exceed the length of the tracksConfig)
