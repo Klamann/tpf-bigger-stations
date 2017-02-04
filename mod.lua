@@ -15,7 +15,7 @@ return {
         tfnetId = 21474,
       },
     },
-    tags = { "Train Station" },
+    tags = { "Train Station", "Freight Station", "Script Mod" },
 	},
 	runFn = function (settings)
 		local stationmod = require "stationmod"

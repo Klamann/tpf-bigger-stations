@@ -107,6 +107,17 @@ function tableToString(tbl)
   return arrayToString(ar)
 end
 
+--- a replacement for the missing ternary operator in lua.
+-- This is a poor man's solution though, because both parameters always get evaluated...
+function ternary(condition, if_true, if_false)
+  if condition then return if_true else return if_false end
+end
+
+--- get the value associated with a table key or return the specified default value
+function tableGetOrElse(tbl, key, default)
+  if tbl[key] == nil then return default else return tbl[key] end
+end
+
 
 --
 -- platform config
@@ -821,10 +832,19 @@ function stationmod.makeTrainStationConfig(params, stationConfig, stationBuildin
   -- lua is 1-based, while every same programming language is 0-based.
   -- lua gets called from c++ here, so all parameters we get are 0-based...
 
+  -- first, let's see if the curved station mod is active
+  -- we need to know about the curve index because curved stations with lots of platforms can grow so large
+  -- that they may attempt to fill more than the volume of a circle, which would cause the game to crash
+  local curveIndex = tableGetOrElse(params, "curveIndex", 3)
+
   -- calculate the intended number of tracks
   local numTracks = stationmod.numTracks[params.numTracks+1] + stationmod.numTracksToAdd[params.numTracksToAdd+1]
-  -- set the original parameter, so we don't have to change existing code
-  params.numTracksIndex = numTracks-1
+  -- limit the number of tracks so no negative platform lengths can occur
+  if curveIndex == 6 then
+    -- for a curve index of 6 (== "-3"), the number of tracks must not exceed 43
+    numTracks = math.min(numTracks, 43)
+    log.debug("numTracks (adjusted): " .. tostring(numTracks))
+  end
   -- calculate the track config index (must not exceed the length of the tracksConfig)
   local trackConfigIndex = math.min(numTracks, #stationConfig.tracksConfig)
 
