@@ -24,7 +24,6 @@ https://www.transportfever.net/index.php/Thread/7379
 
 ]]--
 
-local constructionutil = require("constructionutil_bugfix")
 local paramsutil = require "paramsutil"
 local railstationconfigutil = require "railstationconfigutil"
 local stationmod = {}
@@ -729,7 +728,7 @@ function railstationconfigutil.makeTrainStationConfig(params, stationConfig, sta
   now, let's detect whether the user switched to another station in the UI.
   we have 3 ways of detecting that a new station has been selected in the menu:
   1. the station name has changed
-     * this can be easily figuered out, but sadly, modders sometimes use the same station names as the vanilla stations
+     * this can be easily figured out, but sadly, modders sometimes use the same station names as the vanilla stations
   2. certain parameters are missing, depending on the previous mod state
      * this can be either
        - mod was enabled, but now mod params are missing
