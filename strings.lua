@@ -1,7 +1,7 @@
 function data()
 return {
   en = {
-    ["name"] = "Bigger Train Stations",
+    ["name"] = "Bigger Train Stations 1.2",
     ["desc"] = [[This mod adds more options to train stations: more tracks & longer platforms, but also a very short platform and pretty much everything in between has been added ;)
 
 Features:
@@ -18,7 +18,7 @@ Compatibility:
 ]],
   },
   de = {
-    ["name"] = "Größere Bahnhöfe",
+    ["name"] = "Größere Bahnhöfe 1.2",
     ["desc"] = [[Diese Mod fügt den Bahnhöfen einige neue Optionen hinzu: Mehr Gleise, längere Bahnsteige, aber auch sehr kurze Bahnsteige und so ziemlich alles dazwischen ;)
 
 Features:

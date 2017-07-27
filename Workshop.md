@@ -13,14 +13,15 @@ This mod adds more options to train stations: more tracks & longer platforms, bu
 
 ## Compatibility
 
-* this mod can be safely added and removed at any time
+* this mod can be safely added and removed at any time. Your savegames will not be affected.
 * adds options to all vanilla stations (you will still get the same stations, there are just way more options to pick from)
-* adds options to all modded stations that do not alter the track configuration (e.g. [Sloped train stations](http://steamcommunity.com/sharedfiles/filedetails/?id=824307738))
-* works with all station mods currently available in the workshop, except for "[Longer Train Stations v5](http://steamcommunity.com/sharedfiles/filedetails/?id=799390578)"
+* adds options to [Curved train stations](http://steamcommunity.com/sharedfiles/filedetails/?id=854664535), [Sloped train stations](http://steamcommunity.com/sharedfiles/filedetails/?id=824307738) and other modded stations that do not alter the track configuration
+* Tested with all train station mods currently available in the Workshop. Not compatible with: "[Longer Train Stations v5](http://steamcommunity.com/sharedfiles/filedetails/?id=799390578)", "[Longer Train Stations (400 m)](http://steamcommunity.com/sharedfiles/filedetails/?id=795434891)" and "[Cargo station without middle ramp](http://steamcommunity.com/sharedfiles/filedetails/?id=797527610)".
 
-**Warning**: not compatible with "[Longer Train Stations v5](http://steamcommunity.com/sharedfiles/filedetails/?id=799390578)" - both mods use a similar method to change things, so they don't get along very well. Having both mods active does not cause crashes, but this mod simply won't work. This is not a bug and cannot be fixed.
+*Note*: Compatibility issues usually arise, because another mod is trying to do the same thing as this one (i.e. adjusting properties of the vanilla train stations). Having incompatible mods active won't cause crashes and it won't damage your savegames, but this mod may not work as expected.
 
 ## Random notes
 
-* this mod also fixes a bug in TpF which causes the ground not get properly aligned if a station with a second street connection is built
+* ~~this mod also fixes a bug in TpF which causes the ground not get properly aligned if a station with a second street connection is built~~ - has been fixed
+* the allowed number of tracks for the passenger through station and the cargo through station was reduced due to an issue in Transport Fever that caused error messages to appear (e.g. "Terminals are not properly"). 
 * Your feedback is very welcome. If you encounter any issues, please attach your log files from `Steam/userdata/<userid>/446800/local/crash_dump`

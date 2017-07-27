@@ -18,9 +18,9 @@ Mods for Transport Fever are written in Lua Script and therefore no compilation 
 
     python package.py
 
-This will create a zip-file with all required files of this mod in the dist-folder.
+This will create a zip-file with all required files of this mod in the `dist`-folder.
 
-If you are interested to learn, how this mod works: there are lots of hints and comments in the source code, especially in [stationmod.lua](./res/scripts/stationmod.lua).
+If you are interested to learn how this mod works: there are lots of hints and comments in the source code, especially in [stationmod.lua](./res/scripts/stationmod.lua).
 
 ## License
 
