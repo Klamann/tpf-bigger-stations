@@ -611,6 +611,7 @@ end
 
 
 function stationmod.makePlatformConfig(stationConfig)
+  log.debug("--- makePlatformConfig ---")
   if stationConfig.type == "passenger" then
     return stationmod.makePlatformConfigPassenger(stationConfig)
   else
@@ -629,9 +630,12 @@ stationmod.numTracksStr = { _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7
 stationmod.numTracksToAdd = { 0, 8, 16, 24, 32, 40 }
 stationmod.numTracksToAddStr = { _("+0"), _("+8"), _("+16"), _("+24"), _("+32"), _("+40") }
 stationmod.trackLength = { 40, 80, 120, 160, 200 }
-stationmod.trackLengthStr = { _("40 m"), _("80 m"), _("120 m"), _("160 m"), _("200 m") }
+stationmod.trackLengthStr = { _("40m"), _("80m"), _("120m"), _("160m"), _("200m") }
 stationmod.trackLengthToAdd = { 0, 200, 400, 600, 800 }
 stationmod.trackLengthToAddStr = { _("+0"), _("+200"), _("+400"), _("+600"), _("+800") }
+
+-- if safe mode is enabled, no constructions are allowed that could cause the "Construction configuration error"
+stationmod.safeMode = true
 
 
 --- this function overrides the original makeTrainStationParams from paramsutil.
@@ -640,6 +644,7 @@ stationmod.trackLengthToAddStr = { _("+0"), _("+200"), _("+400"), _("+600"), _("
 -- @param platformConfig an array of available platform config options (also not needed)
 --
 function paramsutil.makeTrainStationParams(stationConfig, platformConfig)
+  log.debug("--- makeTrainStationConfig ---")
   return {
     {
       key = "numTracks",
@@ -649,7 +654,7 @@ function paramsutil.makeTrainStationParams(stationConfig, platformConfig)
     },
     {
       key = "numTracksToAdd",
-      name = _(""),
+      name = _("additional tracks"),
       values = stationmod.numTracksToAddStr,
       defaultIndex = 0
     },
@@ -661,7 +666,7 @@ function paramsutil.makeTrainStationParams(stationConfig, platformConfig)
     },
     {
       key = "trackLengthToAdd",
-      name = _(""),
+      name = _("additional length"),
       values = stationmod.trackLengthToAddStr,
       defaultIndex = 0
     },
@@ -838,6 +843,7 @@ function stationmod.makeTrainStationConfig(params, stationConfig, stationBuildin
 
   -- calculate the intended number of tracks
   local numTracks = stationmod.numTracks[params.numTracks+1] + stationmod.numTracksToAdd[params.numTracksToAdd+1]
+
   -- limit the number of tracks so no negative platform lengths can occur
   if curveIndex == 6 then
     -- for a curve index of 6 (== "-3"), the number of tracks must not exceed 42 for passenger and 32 for cargo stations
@@ -845,6 +851,21 @@ function stationmod.makeTrainStationConfig(params, stationConfig, stationBuildin
     numTracks = math.min(numTracks, limit)
     log.debug("numTracks (adjusted): " .. tostring(numTracks))
   end
+
+  -- limit the number of tracks, if other issues are to be expected
+  -- prevent the error message "Construction configuration error: Terminals are not properly"
+  -- for german users: "Konfigurationsfehler in einer Konstruktion: Die Terminals sind nicht korrekt"
+  -- this does not crash the game and continues to properly construct the station, but it's annoying and
+  -- users complain about it, so let's prevent this by limiting the allowed number of tracks...
+
+  if stationmod.safeMode and stationConfig.stationType == "through" then
+    if stationConfig.type == "passenger" then
+      numTracks = math.min(numTracks, ternary(curveIndex == 0, 39, 41))
+    elseif stationConfig.type == "cargo" then
+      numTracks = math.min(numTracks, ternary(params.streetSecondConnection == 0, 36, 35))
+    end
+  end
+
   -- calculate the track config index (must not exceed the length of the tracksConfig)
   local trackConfigIndex = math.min(numTracks, #stationConfig.tracksConfig)
 
